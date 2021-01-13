@@ -1,15 +1,13 @@
-// Things to add later.... Showing parents, Ages, aging, birth odds, death, random ages, random death, pretty version
-// Level 1 - 2 Men, 1 Woman, Give the woman a grandchild without inbreeding, no age, no death, garunteed birth
-// Level 2 - 3 Men, 1 Woman, Give the woman a great-grandchild without inbreeding, no age, no death, garunteed birth
-// Level 3 - 2 Men, 2 Women, Give anyone a great-great-grandchild without inbreeding, set start age, set death, garunteed birth
 import {useEffect, useState} from 'react';
 import Person from "./components/Person";
-import {findPerson, getMaxAncestorGenerations, peopleAreRelated} from "./utils/utils";
+import {getMaxAncestorGenerations, peopleAreRelated} from "./utils/utils";
+
+import './App.css';
 
 const scenarios = {
   1: {males: 2, females: 1, depth: 2, depthLabel: 'grandchild'},
   2: {males: 3, females: 1, depth: 3, depthLabel: 'great-grandchild'},
-  3: {males: 2, females: 2, depth: 4, depthLabel: 'great-great-grandchild'}
+  3: {males: 2, females: 2, depth: 3, depthLabel: 'great-grandchild'}
 };
 
 async function getInitialPeople(setPeople, scenario) {
@@ -72,22 +70,29 @@ async function reproduce(people, setPeople, scenario, setScenario) {
       const matesMaxAncestors = getMaxAncestorGenerations(person.mate, people);
       console.log(personMaxAncestors, matesMaxAncestors, scenarios[scenario].depth);
       if (Math.max(personMaxAncestors, matesMaxAncestors) + 1 >= scenarios[scenario].depth) {
-        const confirm = window.confirm('Well done! You won!');
-        if (confirm) {
-          setScenario(scenario+1);
+        if (scenario >= scenarios.length) {
+          const confirm = window.confirm('Well done! You won the game!');
+          if (confirm) {
+            setScenario(1);
+          } else {
+            setScenario(1);
+          }
         } else {
-          setScenario(scenario+1);
+          const confirm = window.confirm('Well done! On to the next level for you!');
+          if (confirm) {
+            setScenario(scenario + 1);
+          } else {
+            setScenario(scenario + 1);
+          }
         }
         return false;
       }
-      const mate = findPerson(person.mate, people);
-      newPeople.push({mother: person.name, father: mate.name});
+      newPeople.push({mother: person.name, father: person.mate});
     }
     return true;
   });
   if (newPeople.length > 0) {
     const newBorns = await makeNewPeople(newPeople);
-    // console.log(newBorns);
     setPeople(people.concat(newBorns));
   }
 
