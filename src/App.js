@@ -1,6 +1,7 @@
-// Level 1 - 2 Men, 1 Woman, Give the woman a grandchild without inbreeding
-// Level 2 - 3 Men, 1 Woman, Give the woman a great-grandchild without inbreeding
-// Level 3 - 2 Men, 2 Women, Give anyone a great-grandchild without inbreeding
+// Things to add later.... Showing parents, Ages, aging, birth odds, death, random ages, random death, pretty version
+// Level 1 - 2 Men, 1 Woman, Give the woman a grandchild without inbreeding, no age, no death, garunteed birth
+// Level 2 - 3 Men, 1 Woman, Give the woman a great-grandchild without inbreeding, no age, no death, garunteed birth
+// Level 3 - 2 Men, 2 Women, Give anyone a great-grandchild without inbreeding, set start age, set death, garunteed birth
 
 import './App.css';
 import React, {useEffect, useState} from 'react';
