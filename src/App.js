@@ -101,6 +101,7 @@ async function reproduce(people, setPeople, scenario, setScenario) {
 function App() {
   const [people, setPeople] = useState([]);
   const [scenario, setScenario] = useState(1);
+  const [showParents, setShowParents] = useState(false);
 
   useEffect(() => {
     getInitialPeople(setPeople, scenario);
@@ -110,9 +111,12 @@ function App() {
     <div>
       The Event has left only {scenarios[scenario].males + scenarios[scenario].females} people alive. Give the woman
       a {scenarios[scenario].depthLabel} without inbreeding.
-      <ul>
+      <div>
+        <label>Show Parents: <input type="checkbox" value={showParents} onClick={() => setShowParents(!showParents)}/></label>
+      </div>
+      <ul className='people'>
         {people.map((person) => (
-          <Person {...person} key={person.name} setPeople={setPeople} people={people}
+          <Person {...person} key={person.name} setPeople={setPeople} people={people} showParents={showParents}
                   selectMate={selectMate}/>
         ))}
       </ul>
