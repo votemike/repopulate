@@ -1,3 +1,19 @@
+#app {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+
+  /*@TODO Portrait screens*/
+}
+
+h2 {
+  text-align: center;
+}
+
+/*section {*/
+/*  flex-grow: 1;*/
+/*}*/
+
 ul.people {
   padding: 0;
   list-style-type: none;

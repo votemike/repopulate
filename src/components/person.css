@@ -1,0 +1,12 @@
+li {
+    display: flex;
+    align-items: center;
+}
+
+li.female {
+    border: 5px solid pink;
+}
+
+li.male {
+    border: 5px solid lightskyblue;
+}

@@ -10,19 +10,61 @@ const scenarios = {
   3: {males: 2, females: 2, depth: 3, depthLabel: 'great-grandchild'}
 };
 
-async function getInitialPeople(setPeople, scenario) {
-  const results = await Promise.all([
-    fetch(`https://randomuser.me/api/?gender=female&results=${scenarios[scenario].females}&inc=name&nat=us,dk,fr,gb`).then((response) => response.json()),
-    fetch(`https://randomuser.me/api/?gender=male&results=${scenarios[scenario].males}&inc=name&nat=us,dk,fr,gb`).then((response) => response.json())
-  ]);
+let unusedFemales = [
+  {name: 'Ana', sex: 'female'},
+  {name: 'Andrea', sex: 'female'},
+  {name: 'Anita', sex: 'female'},
+  {name: 'Elena', sex: 'female'},
+  {name: 'Elizabeth', sex: 'female'},
+  {name: 'Fatima', sex: 'female'},
+  {name: 'Jean', sex: 'female'},
+  {name: 'Maria', sex: 'female'},
+  {name: 'Marie', sex: 'female'},
+  {name: 'Martha', sex: 'female'},
+  {name: 'Mary', sex: 'female'},
+  {name: 'Natalya', sex: 'female'},
+  {name: 'Nushi', sex: 'female'},
+  {name: 'Olga', sex: 'female'},
+  {name: 'Patricia', sex: 'female'},
+  {name: 'Rita', sex: 'female'},
+  {name: 'Rosa', sex: 'female'},
+  {name: 'Sandra', sex: 'female'},
+  {name: 'Sarah', sex: 'female'},
+  {name: 'Svetlana', sex: 'female'},
+  {name: 'Tatyana', sex: 'female'},
+  {name: 'Yan', sex: 'female'},
+];
+let unusedMales = [
+  {name: 'Abdul', sex: 'male'},
+  {name: 'Ali', sex: 'male'},
+  {name: 'Antonio', sex: 'male'},
+  {name: 'Carlos', sex: 'male'},
+  {name: 'David', sex: 'male'},
+  {name: 'Daniel', sex: 'male'},
+  {name: 'Francisco', sex: 'male'},
+  {name: 'Hassan', sex: 'male'},
+  {name: 'Ibrahim', sex: 'male'},
+  {name: 'James', sex: 'male'},
+  {name: 'John', sex: 'male'},
+  {name: 'Jose', sex: 'male'},
+  {name: 'Joseph', sex: 'male'},
+  {name: 'Michael', sex: 'male'},
+  {name: 'Mohammed', sex: 'male'},
+  {name: 'Paul', sex: 'male'},
+  {name: 'Pedro', sex: 'male'},
+  {name: 'Peter', sex: 'male'},
+  {name: 'Richard', sex: 'male'},
+  {name: 'Robert', sex: 'male'},
+  {name: 'Thomas', sex: 'male'},
+  {name: 'William', sex: 'male'},
+];
 
-  const girls = results[0].results.map((person) => {
-    return {name: person.name.first, sex: 'female'}
-  });
-  const boys = results[1].results.map((person) => {
-    return {name: person.name.first, sex: 'male'}
-  });
-  const allPeople = girls.concat(boys);
+async function getInitialPeople(setPeople, scenario) {
+  console.log(unusedMales, unusedFemales);
+  // @TODO Randomise this
+  const allPeople = unusedFemales
+    .splice(0, scenarios[scenario].females)
+    .concat(unusedMales.splice(0, scenarios[scenario].males));
   setPeople(allPeople);
 }
 
@@ -39,20 +81,40 @@ function selectMate(name, mateName, people, setPeople) {
   setPeople(tempPeople);
 }
 
-async function makeNewPeople(newPeople) {
-  const results = await fetch(`https://randomuser.me/api/?results=${newPeople.length}&inc=name,gender&nat=us,dk,fr,gb`).then((response) => response.json());
-  return newPeople.map((parents, index) => {
-    const person = results.results[index];
+function getFemale() {
+  console.log(unusedFemales.length);
+
+  if (unusedFemales.length <= 0) {
+    alert('Run out of females');
+  }
+
+  return unusedFemales.shift();
+}
+
+function getMale() {
+  console.log(unusedMales.length);
+  if (unusedMales.length <= 0) {
+    alert('Run out of males');
+  }
+
+  return unusedMales.shift();
+}
+
+function makeNewPeople(newPeople) {
+  console.log(unusedMales, unusedFemales);
+  return newPeople.map((parents) => {
+    const person = Math.random() < 0.5 ? getFemale() : getMale();
+    console.log(person);
     return {
-      name: person.name.first,
-      sex: person.gender,
+      name: person.name,
+      sex: person.sex,
       mother: parents.mother,
       father: parents.father,
     }
   });
 }
 
-async function reproduce(people, setPeople, scenario, setScenario) {
+async function reproduce(people, setPeople, scenario, setScenario, setNews) {
   let newPeople = [];
   await people.every(person => {
     if (person.mate) {
@@ -64,13 +126,14 @@ async function reproduce(people, setPeople, scenario, setScenario) {
           getInitialPeople(setPeople, scenario);
         }
         newPeople = [];
+        setNews([]);
         return false;
       }
       const personMaxAncestors = getMaxAncestorGenerations(person.name, people);
       const matesMaxAncestors = getMaxAncestorGenerations(person.mate, people);
-      console.log(personMaxAncestors, matesMaxAncestors, scenarios[scenario].depth);
+
       if (Math.max(personMaxAncestors, matesMaxAncestors) + 1 >= scenarios[scenario].depth) {
-        if (scenario >= scenarios.length) {
+        if (scenario >= Object.keys(scenarios).length) {
           const confirm = window.confirm('Well done! You won the game!');
           if (confirm) {
             setScenario(1);
@@ -85,6 +148,8 @@ async function reproduce(people, setPeople, scenario, setScenario) {
             setScenario(scenario + 1);
           }
         }
+        setNews([]);
+        newPeople = [];
         return false;
       }
       newPeople.push({mother: person.name, father: person.mate});
@@ -92,37 +157,56 @@ async function reproduce(people, setPeople, scenario, setScenario) {
     return true;
   });
   if (newPeople.length > 0) {
-    const newBorns = await makeNewPeople(newPeople);
+    const newBorns = makeNewPeople(newPeople);
     setPeople(people.concat(newBorns));
+    newBorns.forEach((newBorn) => {
+      setNews(oldNews => [...oldNews, `${newBorn.name} was born to ${newBorn.mother} and ${newBorn.father}`]);
+    });
   }
-
 }
 
 function App() {
   const [people, setPeople] = useState([]);
+  const [news, setNews] = useState([]);
   const [scenario, setScenario] = useState(1);
-  const [showParents, setShowParents] = useState(false);
+  // const [showParents, setShowParents] = useState(false);
+  const [showParents, setShowParents] = useState(true);
 
   useEffect(() => {
     getInitialPeople(setPeople, scenario);
   }, [scenario]);
 
   return (
-    <div>
-      The Event has left only {scenarios[scenario].males + scenarios[scenario].females} people alive. Give the woman
-      a {scenarios[scenario].depthLabel} without inbreeding.
-      <div>
-        <label>Show Parents: <input type="checkbox" value={showParents} onClick={() => setShowParents(!showParents)}/></label>
-      </div>
-      <ul className='people'>
-        {people.map((person) => (
-          <Person {...person} key={person.name} setPeople={setPeople} people={people} showParents={showParents}
-                  selectMate={selectMate}/>
-        ))}
-      </ul>
-      <button onClick={() => reproduce(people, setPeople, scenario, setScenario)}>
-        Reproduce
-      </button>
+    <div id="app">
+      <section>
+        <h2>Scenario</h2>
+        The Event has left only {scenarios[scenario].males + scenarios[scenario].females} people alive.<br/>Give the woman
+        a {scenarios[scenario].depthLabel} without inbreeding.
+      </section>
+      <section>
+        {/*<div>*/}
+        {/*  <label>Show Parents: <input type="checkbox" value={showParents} onClick={() => setShowParents(!showParents)}/></label>*/}
+        {/*</div>*/}
+        <h2>Humans</h2> {/*Add a settings icon here*/}
+        <ul className='people'>
+          {people.map((person) => (
+            <Person {...person} key={person.name} setPeople={setPeople} people={people} showParents={showParents}
+                    selectMate={selectMate}/>
+          ))}
+        </ul>
+        <button onClick={() => reproduce(people, setPeople, scenario, setScenario, setNews)} style={{width: '100%'}}>
+          Reproduce
+        </button>
+      </section>
+      <section>
+        <h2>Log</h2>
+        <ul className='news'>
+          {news.map((newsItem, index) => (
+            <li key={index}>{newsItem}</li>
+          ))}
+        </ul>
+      </section>
+
     </div>
   );
 }
